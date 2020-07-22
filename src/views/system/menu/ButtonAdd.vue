@@ -122,9 +122,7 @@ export default {
           }
           // 0 表示菜单 1 表示按钮
           this.button.type = '1'
-          this.$post('menu', {
-            ...this.button
-          }).then(() => {
+          this.$post('menu', this.button).then(() => {
             this.reset()
             this.$emit('success')
           }).catch(() => {

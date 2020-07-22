@@ -5,9 +5,11 @@ import store from '../store'
 import db from 'utils/localstorage'
 moment.locale('zh-cn')
 
+
+export const base_url =  'http://localhost:9009/'
 // 统一配置
 let FOREST_REQUEST = axios.create({
-  baseURL: 'http://127.0.0.1:9009/',
+  baseURL: base_url,
   responseType: 'json',
   validateStatus (status) {
     // 200 外的状态码都认定为失败
@@ -82,33 +84,15 @@ FOREST_REQUEST.interceptors.response.use((config) => {
 const request = {
   post (url, params) {
     return FOREST_REQUEST.post(url, params, {
-      transformRequest: [(params) => {
-        let result = ''
-        Object.keys(params).forEach((key) => {
-          if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
-            result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
-          }
-        })
-        return result
-      }],
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/json'
       }
     })
   },
   put (url, params) {
     return FOREST_REQUEST.put(url, params, {
-      transformRequest: [(params) => {
-        let result = ''
-        Object.keys(params).forEach((key) => {
-          if (!Object.is(params[key], undefined) && !Object.is(params[key], null)) {
-            result += encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) + '&'
-          }
-        })
-        return result
-      }],
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/json'
       }
     })
   },

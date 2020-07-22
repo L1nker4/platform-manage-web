@@ -2,38 +2,31 @@
   <a-card :bordered="false" class="card-area">
     <div :class="advanced ? 'search' : null">
       <!-- 搜索区域 -->
-      <a-form layout="horizontal">
-        <div :class="advanced ? null: 'fold'">
-          <a-row >
-            <a-col :md="12" :sm="24" >
-              <a-form-item
-                label="名称"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <a-input v-model="queryParams.deptName"/>
-              </a-form-item>
-            </a-col>
-            <a-col :md="12" :sm="24" >
-              <a-form-item
-                label="创建时间"
-                :labelCol="{span: 5}"
-                :wrapperCol="{span: 18, offset: 1}">
-                <range-date @change="handleDateChange" ref="createTime"></range-date>
-              </a-form-item>
-            </a-col>
-          </a-row>
-        </div>
-        <span style="float: right; margin-top: 3px;">
-          <a-button type="primary" @click="search">查询</a-button>
-          <a-button style="margin-left: 8px" @click="reset">重置</a-button>
-        </span>
-      </a-form>
+<!--      <a-form layout="horizontal">-->
+<!--        <div :class="advanced ? null: 'fold'">-->
+<!--          <a-row >-->
+<!--            <a-col :md="12" :sm="24" >-->
+<!--              <a-form-item-->
+<!--                label="名称"-->
+<!--                :labelCol="{span: 5}"-->
+<!--                :wrapperCol="{span: 18, offset: 1}">-->
+<!--                <a-input v-model="queryParams.deptName"/>-->
+<!--              </a-form-item>-->
+<!--            </a-col>-->
+<!--          </a-row>-->
+<!--        </div>-->
+<!--        <span style="float: right; margin-top: 3px;">-->
+<!--          <a-button type="primary" @click="search">查询</a-button>-->
+<!--          <a-button style="margin-left: 8px" @click="reset">重置</a-button>-->
+<!--        </span>-->
+<!--      </a-form>-->
     </div>
     <div>
       <div class="operator">
-        <a-button v-hasPermission="['dept:add']" type="primary" ghost @click="add">新增</a-button>
-        <a-button v-hasPermission="['dept:delete']" type="primary" ghost @click="batchDelete">删除</a-button>
-        <a-dropdown v-hasPermission="['dept:export']">
+        <a-button v-hasPermission="['pms:category:add']" type="primary" ghost @click="add">新增</a-button>
+        <a-button v-hasPermission="['pms:category:delete']" type="primary" ghost @click="batchDelete">删除</a-button>
+<!--        v-hasPermission="['pms:category:export']"-->
+        <a-dropdown>
           <a-menu slot="overlay">
             <a-menu-item key="export-data" @click="exportExcel">导出Excel</a-menu-item>
           </a-menu>
@@ -46,40 +39,44 @@
       <a-table :columns="columns"
                :dataSource="dataSource"
                :pagination="pagination"
+               :row-key="record => record.id"
                :loading="loading"
                :scroll="{ x: 900 }"
                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
                @change="handleTableChange">
+        <template slot="logo" slot-scope="text, record">
+          <img :src="text" height="50px" width="50px" />
+        </template>
+
         <template slot="operation" slot-scope="text, record">
-          <a-icon v-hasPermission="['dept:update']" type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修改"></a-icon>
-          <a-badge v-hasNoPermission="['dept:update']" status="warning" text="无权限"></a-badge>
+          <a-icon v-hasPermission="['pms:category:update']" type="setting" theme="twoTone" twoToneColor="#4a9ff5" @click="edit(record)" title="修改"></a-icon>
+          <a-badge v-hasNoPermission="['pms:category:update']" status="warning" text="无权限"></a-badge>
         </template>
       </a-table>
     </div>
-    <!-- 新增部门 -->
-    <dept-add
+    <!-- 新增商品分类 -->
+    <category-add
       @success="handleDeptAddSuccess"
       @close="handleDeptAddClose"
-      :deptAddVisiable="deptAddVisiable">
-    </dept-add>
-    <!-- 修改部门 -->
-    <dept-edit
-      ref="deptEdit"
-      @success="handleDeptEditSuccess"
-      @close="handleDeptEditClose"
-      :deptEditVisiable="deptEditVisiable">
-    </dept-edit>
+      :categoryAddVisiable="categoryAddVisiable">
+    </category-add>
+    <!-- 修改分类 -->
+    <category-edit
+      ref="categoryEdit"
+      @success="handleCategoryEditSuccess"
+      @close="handleCategoryEditClose"
+      :categoryEditVisiable="categoryEditVisiable">
+    </category-edit>
   </a-card>
 </template>
 
 <script>
-import RangeDate from '@/components/datetime/RangeDate'
-import DeptAdd from './DeptAdd'
-import DeptEdit from './DeptEdit'
+import CategoryAdd from './CategoryAdd'
+import CategoryEdit from "./CategoryEdit";
 
 export default {
-  name: 'Dept',
-  components: {DeptAdd, DeptEdit, RangeDate},
+  name: 'Category',
+  components: {CategoryAdd, CategoryEdit},
   data () {
     return {
       advanced: false,
@@ -93,30 +90,62 @@ export default {
         indentSize: 100
       },
       loading: false,
-      deptAddVisiable: false,
-      deptEditVisiable: false
+      categoryAddVisiable: false,
+      categoryEditVisiable: false
     }
   },
   computed: {
     columns () {
-      let { sortedInfo } = this
-      sortedInfo = sortedInfo || {}
+      // let { sortedInfo } = this
+      // sortedInfo = sortedInfo || {}
       return [{
-        title: '名称',
-        dataIndex: 'text'
+        title: '分类名称',
+        dataIndex: 'name'
       }, {
-        title: '排序',
-        dataIndex: 'order'
+        title: '分类级别',
+        dataIndex: 'level'
       }, {
-        title: '创建时间',
-        dataIndex: 'createTime',
-        sorter: true,
-        sortOrder: sortedInfo.columnKey === 'createTime' && sortedInfo.order
+        title: '商品数量',
+        dataIndex: 'productCount'
       }, {
-        title: '修改时间',
-        dataIndex: 'updateTime',
-        sorter: true,
-        sortOrder: sortedInfo.columnKey === 'updateTime' && sortedInfo.order
+        title: '商品单位',
+        dataIndex: 'productUnit'
+      }, {
+        title: '显示状态',
+        dataIndex: 'showStatus',
+        customRender: (text, row, index) => {
+          switch (text) {
+            case 'NOT_SHOW':
+              return '不显示'
+            case 'SHOW':
+              return '显示'
+            default:
+              return text
+          }
+        }
+      }, {
+        title: '导航栏显示',
+        dataIndex: 'navStatus',
+        customRender: (text, row, index) => {
+          switch (text) {
+            case 'NOT_SHOW':
+              return '不显示'
+            case 'SHOW':
+              return '显示'
+            default:
+              return text
+          }
+        }
+      },{
+        title: '图片',
+        dataIndex: 'logo',
+        scopedSlots: { customRender: 'logo' }
+      }, {
+        title: '关键字',
+        dataIndex: 'keywords'
+      }, {
+        title: '描述',
+        dataIndex: 'description'
       }, {
         title: '操作',
         dataIndex: 'operation',
@@ -134,27 +163,27 @@ export default {
       this.selectedRowKeys = selectedRowKeys
     },
     handleDeptAddClose () {
-      this.deptAddVisiable = false
+      this.categoryAddVisiable = false
     },
     handleDeptAddSuccess () {
-      this.deptAddVisiable = false
-      this.$message.success('新增部门成功')
+      this.categoryAddVisiable = false
+      this.$message.success('新增商品分类成功')
       this.fetch()
     },
     add () {
-      this.deptAddVisiable = true
+      this.categoryAddVisiable = true
     },
-    handleDeptEditClose () {
-      this.deptEditVisiable = false
+    handleCategoryEditClose () {
+      this.categoryEditVisiable = false
     },
-    handleDeptEditSuccess () {
-      this.deptEditVisiable = false
-      this.$message.success('修改部门成功')
+    handleCategoryEditSuccess () {
+      this.categoryEditVisiable = false
+      this.$message.success('修改商品分类成功')
       this.fetch()
     },
     edit (record) {
-      this.deptEditVisiable = true
-      this.$refs.deptEdit.setFormValues(record)
+      this.categoryEditVisiable = true
+      this.$refs.categoryEdit.setFormValues(record)
     },
     handleDateChange (value) {
       if (value) {
@@ -173,7 +202,7 @@ export default {
         content: '当您点击确定按钮后，这些记录将会被彻底删除，如果其包含子记录，也将一并删除！',
         centered: true,
         onOk () {
-          that.$delete('dept/' + that.selectedRowKeys.join(',')).then(() => {
+          that.$delete('category/' + that.selectedRowKeys.join(',')).then(() => {
             that.$message.success('删除成功')
             that.selectedRowKeys = []
             that.fetch()
@@ -192,11 +221,7 @@ export default {
         sortField = sortedInfo.field
         sortOrder = sortedInfo.order
       }
-      this.$export('dept/excel', {
-        sortField: sortField,
-        sortOrder: sortOrder,
-        ...this.queryParams
-      })
+      this.$export('category/excel')
     },
     search () {
       let {sortedInfo} = this
@@ -234,10 +259,10 @@ export default {
     },
     fetch (params = {}) {
       this.loading = true
-      this.$get('category', {
+      this.$get('/category', {
         ...params
       }).then((r) => {
-        let data = r.data
+        let data = r.data.data
         this.loading = false
         this.dataSource = data.rows.children
       })
@@ -247,5 +272,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import "../../../../static/less/Common";
+  @import "../../../../../static/less/Common";
 </style>

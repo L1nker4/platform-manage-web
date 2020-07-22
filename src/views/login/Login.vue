@@ -39,14 +39,14 @@
         </a-tab-pane>
         <a-tab-pane tab="手机号登录" key="2">
           <a-form-item>
-            <a-input size="large">
+            <a-input size="large" placeholder="手机号">
               <a-icon slot="prefix" type="mobile"></a-icon>
             </a-input>
           </a-form-item>
           <a-form-item>
             <a-row :gutter="8" style="margin: 0 -4px">
               <a-col :span="16">
-                <a-input size="large">
+                <a-input size="large" placeholder="验证码">
                   <a-icon slot="prefix" type="mail"></a-icon>
                 </a-input>
               </a-col>
