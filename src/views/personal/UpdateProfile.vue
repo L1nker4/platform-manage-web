@@ -116,7 +116,7 @@ export default {
         }
       })
       if (user.deptId) {
-        this.userDept = [user.deptId]
+        this.userDept = user.deptId
       }
       this.status = user.status
       this.roleId = user.roleId

@@ -25,10 +25,9 @@
       <div class="operator">
         <a-button v-hasPermission="['pms:category:add']" type="primary" ghost @click="add">新增</a-button>
         <a-button v-hasPermission="['pms:category:delete']" type="primary" ghost @click="batchDelete">删除</a-button>
-<!--        v-hasPermission="['pms:category:export']"-->
         <a-dropdown>
-          <a-menu slot="overlay">
-            <a-menu-item key="export-data" @click="exportExcel">导出Excel</a-menu-item>
+          <a-menu slot="overlay" v-hasPermission="['pms:category:export']">
+            <a-menu-item  key="export-data" @click="exportExcel">导出Excel</a-menu-item>
           </a-menu>
           <a-button>
             更多操作 <a-icon type="down" />
@@ -45,7 +44,7 @@
                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
                @change="handleTableChange">
         <template slot="logo" slot-scope="text, record">
-          <img :src="text" height="50px" width="50px" />
+          <img v-if="text" :src="text" height="50px" width="50px" />
         </template>
 
         <template slot="operation" slot-scope="text, record">
@@ -101,9 +100,6 @@ export default {
       return [{
         title: '分类名称',
         dataIndex: 'name'
-      }, {
-        title: '分类级别',
-        dataIndex: 'level'
       }, {
         title: '商品数量',
         dataIndex: 'productCount'
